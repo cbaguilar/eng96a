@@ -16,6 +16,11 @@
 #define Trig 6
 #define Echo 5 
 
+void forward(int speed = 128);
+void backward(int speed = 128);
+void turn(int speed = 128);
+void printerr(String msg);
+
 void setup() {
   // SetUp for Motor Left
   pinMode(ENA,OUTPUT); 
@@ -47,41 +52,75 @@ void loop() {
   */
   String he = readLine();
   Serial.print(he);
+  doCommand(he);
   delay(100);
 } 
+
+void printErr(String msg) {
+  Serial.println(msg);
+}
+
+void doCommand(String command) {
+  if (command == "forward") {
+    printErr("Moving forward");
+    forward(128);
+  }
+  else if (command == "backward") {
+    backward(128);
+  }
+  else if (command == "turn") {
+    turn(128);
+  }
+  else if (command == "stop") {
+    stop1();
+  }
+  else {
+    printErr("Unknown command");
+  }
+}
 
 String readLine(){
   String command;
   char nextByte = 0;
   if (Serial.available() > 0) {
-    for (int i = 0; i < 100; i++) {
+    while (nextByte != '\n') {
       nextByte = Serial.read();
-      delay(100);
+      //delay(100);
       Serial.print(nextByte);
-      command+=nextByte;
       if (nextByte == '\n') {break;}
+      command+=nextByte;
+      
     }
   }
   return command;
 }
 
-void forward(){ 
-  digitalWrite(ENA,HIGH); 
+void forward(int speed = 128){ 
+  analogWrite(ENA,speed); 
   digitalWrite(IN1,HIGH); 
   digitalWrite(IN2,LOW); 
 
-  digitalWrite(ENB,HIGH); 
+  analogWrite(ENB,speed); 
   digitalWrite(IN3,HIGH); 
   digitalWrite(IN4,LOW); 
-    
   }
 
-void turn(){
-  digitalWrite(ENA,HIGH); 
+void backward(int speed = 128){
+  digitalWrite(ENA,speed); 
   digitalWrite(IN1,LOW); 
   digitalWrite(IN2,HIGH); 
 
-  digitalWrite(ENB,HIGH); 
+  digitalWrite(ENB,speed); 
+  digitalWrite(IN3,LOW); 
+  digitalWrite(IN4,HIGH); 
+}
+
+void turn(int speed = 128){
+  digitalWrite(ENA,speed); 
+  digitalWrite(IN1,LOW); 
+  digitalWrite(IN2,HIGH); 
+  
+  digitalWrite(ENB,speed); 
   digitalWrite(IN3,HIGH); 
   digitalWrite(IN4,LOW); 
   
