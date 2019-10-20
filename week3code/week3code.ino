@@ -13,13 +13,22 @@
 #define IN4 4
 
 
-#define Trig 6
-#define Echo 5 
+#define TRIG 9
+#define ECHO 11
+
+const double FACTOR = 0.0135039;
+
+
+float duration, distance;
+
+boolean moving = false;
 
 void forward(int speed = 128);
 void backward(int speed = 128);
-void turn(int speed = 128);
+void turnRight(int speed = 128);
 void printerr(String msg);
+double pollDist();
+void turnLeft(int speed = 128);
 
 void setup() {
   // SetUp for Motor Left
@@ -33,8 +42,8 @@ void setup() {
   pinMode(IN4,OUTPUT);
 
   //SetUp for Ultra-Sonic Sensor  
-  pinMode(Trig,OUTPUT); 
-  pinMode(Echo,INPUT); 
+  pinMode(TRIG,OUTPUT); 
+  pinMode(ECHO,INPUT); 
   
  digitalWrite(ENA,LOW);
  digitalWrite(IN1,LOW); 
@@ -51,32 +60,54 @@ void loop() {
   delay(1000); 
   */
   String he = readLine();
-  Serial.print(he);
+  //Serial.print(he);
   doCommand(he);
   delay(100);
 } 
+double pollDist() {
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+
+  duration = pulseIn(ECHO, HIGH);
+  distance = (duration*FACTOR)/2;
+  return distance;
+}
 
 void printErr(String msg) {
   Serial.println(msg);
 }
 
 void doCommand(String command) {
-  if (command == "forward") {
+  if (command == "forward" || command=="w") {
     printErr("Moving forward");
     forward(128);
   }
-  else if (command == "backward") {
+  else if (command == "backward" || command=="s") {
     backward(128);
   }
-  else if (command == "turn") {
-    turn(128);
+  else if (command == "turnright" || command=="d"){
+    turnRight(128);
   }
-  else if (command == "stop") {
+  else if (command == "turnleft" || command=="a") {
+    turnLeft(128);
+  }
+  else if (command == "stop" || command=="s") {
     stop1();
   }
-  else {
-    printErr("Unknown command");
+  else if (command == "distance" || command == "dist") {
+    Serial.print("Distance: ");
+    Serial.print(pollDist());
+    Serial.print(" in\n");
   }
+  else {
+    if (pollDist()<6&&(moving)) {
+      Serial.println("Encountered wall, stopping");
+      stop1();
+      }
+   }
 }
 
 String readLine(){
@@ -95,7 +126,8 @@ String readLine(){
   return command;
 }
 
-void forward(int speed = 128){ 
+void backward(int speed = 128){
+  moving = true; 
   analogWrite(ENA,speed); 
   digitalWrite(IN1,HIGH); 
   digitalWrite(IN2,LOW); 
@@ -105,7 +137,8 @@ void forward(int speed = 128){
   digitalWrite(IN4,LOW); 
   }
 
-void backward(int speed = 128){
+void forward(int speed = 128){
+  moving = true;
   digitalWrite(ENA,speed); 
   digitalWrite(IN1,LOW); 
   digitalWrite(IN2,HIGH); 
@@ -115,7 +148,8 @@ void backward(int speed = 128){
   digitalWrite(IN4,HIGH); 
 }
 
-void turn(int speed = 128){
+void turnRight(int speed = 128){
+  moving = true;
   digitalWrite(ENA,speed); 
   digitalWrite(IN1,LOW); 
   digitalWrite(IN2,HIGH); 
@@ -124,6 +158,17 @@ void turn(int speed = 128){
   digitalWrite(IN3,HIGH); 
   digitalWrite(IN4,LOW); 
   
+}
+
+void turnLeft(int speed = 128) {
+  moving = true;
+  digitalWrite(ENA,speed); 
+  digitalWrite(IN1,HIGH); 
+  digitalWrite(IN2,LOW); 
+  
+  digitalWrite(ENB,speed); 
+  digitalWrite(IN3,LOW); 
+  digitalWrite(IN4,HIGH);
 }
 
 void stop1(){   
@@ -134,4 +179,5 @@ void stop1(){
   digitalWrite(ENB,LOW); 
   digitalWrite(IN3,LOW); 
   digitalWrite(IN4,LOW); 
+  moving = false;
   }
