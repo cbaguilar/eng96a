@@ -5,7 +5,7 @@ import pygame
 import pygame
 
 
-ser = serial.Serial('/dev/rfcomm10')
+ser = serial.Serial('/dev/rfcomm0')
 
 # Define some colors.
 BLACK = pygame.Color('black')
